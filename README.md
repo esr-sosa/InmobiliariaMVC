@@ -29,5 +29,5 @@ aqui van las entidades de la base de datos que mas adelante migraremos(propietar
 propietario
 **dotnet aspnet-codegenerator controller -name PropietariosController -m Propietario -dc ApplicationDbContext --relativeFolderPath Controllers --useDefaultLayout --referenceScriptLibraries --force**
 
-**dotnet aspnet-codegenerator controller -name InquilinosController -m Inquilino -dc ApplicationDbContext --relativeFolderPath Controllers --useDefaultLayout --referenceScriptLibraries --force**
+**dotnet aspnet-codegenerator controller -name InquilinosController -m Inquilino -dc ApplicationDbContext --relativeFolderPath Controllers --useDefaultLayout --referenceScriptLibraries --forced**
 
