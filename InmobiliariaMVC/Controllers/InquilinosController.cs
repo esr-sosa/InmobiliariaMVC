@@ -4,24 +4,25 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
 using InmobiliariaMVC.Models;
 
 namespace InmobiliariaMVC.Controllers
 {
     public class InquilinosController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly RepositorioInquilino _repo;
 
-        public InquilinosController(ApplicationDbContext context)
+        public InquilinosController(RepositorioInquilino repo)
         {
-            _context = context;
+            _repo = repo;
         }
 
         // GET: Inquilinos
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Inquilinos.ToListAsync());
+            var lista = _repo.ObtenerTodos();
+            return View(lista);
+
         }
 
         // GET: Inquilinos/Details/5
@@ -32,8 +33,7 @@ namespace InmobiliariaMVC.Controllers
                 return NotFound();
             }
 
-            var inquilino = await _context.Inquilinos
-                .FirstOrDefaultAsync(m => m.IdInquilino == id);
+            var inquilino = _repo.ObtenerPorId(id.Value);
             if (inquilino == null)
             {
                 return NotFound();
@@ -57,8 +57,7 @@ namespace InmobiliariaMVC.Controllers
         {
             if (ModelState.IsValid)
             {
-                _context.Add(inquilino);
-                await _context.SaveChangesAsync();
+                _repo.Alta(inquilino);
                 return RedirectToAction(nameof(Index));
             }
             return View(inquilino);
@@ -72,7 +71,8 @@ namespace InmobiliariaMVC.Controllers
                 return NotFound();
             }
 
-            var inquilino = await _context.Inquilinos.FindAsync(id);
+            var inquilino = _repo.ObtenerPorId(id.Value);
+
             if (inquilino == null)
             {
                 return NotFound();
@@ -94,24 +94,16 @@ namespace InmobiliariaMVC.Controllers
 
             if (ModelState.IsValid)
             {
-                try
+                bool editado = _repo.Editar(inquilino); // que devuelva true si se editó correctamente
+
+                if (!editado)
                 {
-                    _context.Update(inquilino);
-                    await _context.SaveChangesAsync();
+                    return NotFound(); // o mensaje de error personalizado
                 }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!InquilinoExists(inquilino.IdInquilino))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
+
                 return RedirectToAction(nameof(Index));
             }
+
             return View(inquilino);
         }
 
@@ -123,8 +115,7 @@ namespace InmobiliariaMVC.Controllers
                 return NotFound();
             }
 
-            var inquilino = await _context.Inquilinos
-                .FirstOrDefaultAsync(m => m.IdInquilino == id);
+            var inquilino = _repo.ObtenerPorId(id.Value);
             if (inquilino == null)
             {
                 return NotFound();
@@ -138,19 +129,14 @@ namespace InmobiliariaMVC.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var inquilino = await _context.Inquilinos.FindAsync(id);
-            if (inquilino != null)
-            {
-                _context.Inquilinos.Remove(inquilino);
-            }
-
-            await _context.SaveChangesAsync();
+            _repo.Eliminar(id);
             return RedirectToAction(nameof(Index));
+
         }
 
         private bool InquilinoExists(int id)
         {
-            return _context.Inquilinos.Any(e => e.IdInquilino == id);
+            return _repo.ObtenerPorId(id) != null;
         }
     }
 }

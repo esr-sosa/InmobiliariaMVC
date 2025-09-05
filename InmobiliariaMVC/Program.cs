@@ -1,21 +1,13 @@
-using Microsoft.EntityFrameworkCore;
-using InmobiliariaMVC.Models;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
-
+using InmobiliariaMVC.Repositories;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseMySql(
-        builder.Configuration.GetConnectionString("DefaultConnection"),
-        new MySqlServerVersion(new Version(8, 0, 33)) // Ajustá a tu versión de MySQL
-    )
-);
-//eso es para la autenticacion, que usaremos mas tarde
-//builder.Services.AddDefaultIdentity<IdentityUser>()
-//  .AddEntityFrameworkStores<ApplicationDbContext>();
+// Registramos Database y Repositorios para inyección de dependencias
+builder.Services.AddScoped<Database>();
+builder.Services.AddScoped<RepositorioInquilino>();
+builder.Services.AddScoped<RepositorioPropietario>();
 
 var app = builder.Build();
 
@@ -23,7 +15,6 @@ var app = builder.Build();
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
@@ -32,10 +23,7 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-//app.UseAuthentication();  // 👈 antes de Authorization
-
 app.UseAuthorization();
-
 
 app.MapControllerRoute(
     name: "default",
